@@ -5,11 +5,12 @@
  *  - tenere premuto REC per 3 secondi su qualsiasi altra traccia pulisce la traccia
  *  - tempo massimo di registrazione: 71 minuti circa
  *  - numero massimo di note: 10.000 in layers da massimo 500
+ *  - il fu bottone di panic ora attiva/disattiva il MIDI echo dei parametri supportati
  *  
- * il bottone di timeframe (ex. panic) si potrebbe usare per giocare sull'"echo" delle note
+ * 
  *  
  *  by barito 2019
- *  last update: 15 jan 2020
+ *  last update: 20 jan 2020
  */
 
 #include <MIDI.h>
@@ -361,15 +362,17 @@ if(incomingClock != 1){
 void SequenceNotes(){
 for(int i = 0; i<MAX_SEQUENCES; i++){
   if(micros() -  startLoopTime >= noteTime[noteSeqCounter[i]][i]){
-    if(muteTrack[noteTrack[noteSeqCounter[i]][i]] == false){
-      if(MIDIchannel[noteSeqCounter[i]][i]<=16){ //note on/off
-        MIDI.sendNoteOn(MIDIdata1[noteSeqCounter[i]][i], MIDIdata2[noteSeqCounter[i]][i], MIDIchannel[noteSeqCounter[i]][i]);
-      }
-      else if(MIDIchannel[noteSeqCounter[i]][i]<=32){ //control change
-        MIDI.sendControlChange(MIDIdata1[noteSeqCounter[i]][i], MIDIdata2[noteSeqCounter[i]][i], MIDIchannel[noteSeqCounter[i]][i]-16);
-      }
-      else{//<= 48 - pitch bend
-        MIDI.sendPitchBend(MIDIdata1[noteSeqCounter[i]][i]<<6, MIDIchannel[noteSeqCounter[i]][i]-32);
+    if(i != currentSequence){ //this kills the REC ECHO
+      if(muteTrack[noteTrack[noteSeqCounter[i]][i]] == false){
+        if(MIDIchannel[noteSeqCounter[i]][i]<=16){ //note on/off
+          MIDI.sendNoteOn(MIDIdata1[noteSeqCounter[i]][i], MIDIdata2[noteSeqCounter[i]][i], MIDIchannel[noteSeqCounter[i]][i]);
+        }
+        else if(MIDIchannel[noteSeqCounter[i]][i]<=32){ //control change
+          MIDI.sendControlChange(MIDIdata1[noteSeqCounter[i]][i], MIDIdata2[noteSeqCounter[i]][i], MIDIchannel[noteSeqCounter[i]][i]-16);
+        }
+        else{//<= 48 - pitch bend
+          MIDI.sendPitchBend(MIDIdata1[noteSeqCounter[i]][i]<<6, MIDIchannel[noteSeqCounter[i]][i]-32);
+        }
       }
     }
     noteSeqCounter[i]++;
